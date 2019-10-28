@@ -1,0 +1,62 @@
+				xMorphing.
+
+ Currently there are different kinds of morphing - polymorphing,metamorhping,
+ permutation.
+
+ From ex-USSR i heard only about four people, who worked at this field
+ (or working).
+
+ So, here there are:
+ - Reminder. Unfinished permutator.
+ - Zombie, with his different versions of permutator and metamorphic engines.
+ - 2b, with his Way To Full Morphing 
+ - And me :) I wrote metamorphic engine, send it to TopDevice, but Yanusz
+   said that this is not article. Well, this engine was lame, but contained
+   good user interface :)
+
+ What does mean fullmorphing, must be clear. When somebody writes such thing,
+ there always encountered three big problems.
+ 1. Jumps recalculation
+ 2. Part code from data
+ 3. Finding commands, which uses that data.
+
+ So...
+ 1. Jump recalculation is rather simple. 
+
+ 2. This is full shit. There some methods to solve this problem.
+	- Store all data in some defined memory location.
+	  Permutator would work with this location in special way.
+	- Place data in code. For example, create thread of push'es,
+	  which would restore all needed data in stack.
+	- My method :)
+
+ 3. Well. If everything doing through a stack, this is not even a problem.
+    In other case, you'll need to have own disassembler.
+
+ So, my method.
+  Works in two parts.
+
+  First part.
+	Moving thorugh a code (pseudo-emul), jumping,recursivly works with
+  Calls,etc. In same time code/data map is created. Also detect opcodes,
+  which points to (or uses) data.
+
+  Second part.
+	Permutation of source code. Moving through source code. If current
+  byte belongs to code, permutate instruction, add some garble and skip it. 
+  If not, just copy this byte. 
+
+  At least, Jumps,Data offsets,etc patched.
+
+  In such way just code permutated. Problems 1 and 2 solved.
+
+  Last problem solved with small disassembler. Sure, there is some bugs,
+  but this is problems of programmer who try to permutate own code. (Not me :)
+
+ Features
+ - Looks like first almost complete permutator
+
+ Bugs.
+ - Not completely finished.
+
+ Deviator//HAZARD.

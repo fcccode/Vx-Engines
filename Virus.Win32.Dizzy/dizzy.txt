@@ -1,0 +1,91 @@
+
+                            dizzy (light) engin
+                                                 deroko <deroko<at>gmail<dot>com
+                                                 http://deroko.headcoders.net
+Theory
+~~~~~~
+Each progy have call's to some procedure inside of it's code section. So here
+comes idea : "How to find all calls without debugging and why?" 
+Well we have 2 questions here, and 2 answers for them.
+
+1. How to find subroutines?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Well this ain't hard as it seems. Algo is simple and goes like this :
+       -      Start from EP and start disassembling host file.
+       -      for each call check if it is pointing at FF25 which is
+              actually redirection to IAT, and skip that call
+       -      We have valid call inside of code section, and we break
+              into it, trace it all the way, till last ret occurs
+       -      repeat previous step for all calls from EP.
+              So it looks like this
+              
+EP             /call3  
+              / opcodes
+call1---------  ret   
+opcodes
+call2---------         /call5 
+ret           \       / opcodes
+               \call4   ret
+                opcodes
+                call6
+                ret   \
+                       call7
+and so on              opcodes
+                       ret
+Each ret tells us to stop tracing current proc and to return to caller.
+This can be simply maid by using recursion.
+I do not use prolog scan to find subs.
+
+2. Why?
+~~~~~~~
+Well this is really good question, why why why!?!
+Imagine this scenarion :
+You have simple poly engin and you don't wanna put it next to your virus,
+and you want to make it harder for AVers. What could be better solution
+than injecting poly decryptor into some proc and making it to be part of
+code execution. Whole crypted virus could be in some other section and 
+poly decryptor is in code section. By means of permutation, and reg swap
+or some other tehnique you will be invisible for AVs (at least I hope so).
+That is answer to "Why?" question.
+
+Usage and howto
+~~~~~~~~~~~~~~~
+There is dizzy_struct:
+
+DIZZY_STRUCT  STRUCT
+       dizzy_start   dd     ?
+       dizzy_end     dd     ?
+DIZZY_STRUCT  ENDS
+
+After scanning:
+dizzy_start - points to procedure start
+dizzy_end   - points to procedure end
+
+dizzy syntax :
+
+DWORD  __stdcall dizzy (dizzy_struct *dizzy, BYTE *ep, dizzy_struct *base, DWORD size)
+
+dizzy - alocated buffer that will hold array of dizzy structs (should be set to 0)
+ep    - pointer to EP of mapped file
+base  - same as first arg (acctaully it is the same)
+size  - maped file + nthdr.NT_OptionalHeader.OH_SizeOfImage (range check)
+
+return : 0 success
+        -1 error (probably unknown instruction)
+
+NOTE: Example has shell that will popup MessageBoxA with hardcoded addresses. So it 
+      might not work with your windows =) shell is tested on XP SP1 and works fine.
+      Well this doesn't mean taht engin doesn't work, it works but you'll have to
+      code your own shell =)
+
+TODO: Well I have to implement counter for proc calls, and by that I can distinguish
+      calls that are called once (yak), or more times. 
+      
+For usage, and example check dizzy.asm ... Have fun...
+
+                                   deroko <deroko<at>gmail<dot>com
+                                   http://deroko.headcoders.net
+                                   
+                
+ 
+                                                                                                  

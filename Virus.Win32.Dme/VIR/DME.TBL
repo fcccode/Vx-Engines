@@ -1,0 +1,47 @@
+; a.inc
+;  none.
+; api.inc
+;  none.
+; disasmer.inc
+	dd	offset Complex
+	dd	offset GetSize16
+        dd      offset uExtended
+        dd      offset XData
+        dd      offset Return7
+        dd      offset Return3or5
+        dd      offset Return3or5addr
+        dd      offset Repzz
+        dd      offset Grp1
+        dd      offset Grp2
+        dd      offset Complex4
+; pdata.inc
+        dd      offset DataComplex
+        dd      offset DataReturn1
+	dd	offset xOpcode
+; mutate.inc
+	dd	offset Mut_ShortJmp
+	dd	offset Mut_ShortJmp2
+	dd	offset Mut_Loop
+	dd	offset Mut_CheckZero
+	dd	offset Mut_MovZero
+	dd	offset Mut_Xchg
+	dd	offset Mut_Inc
+	dd	offset Mut_Dec
+	dd	offset TryIncDec
+; garbage.inc
+	dd	offset SetMask
+	dd	offset FreeMask
+	dd	offset GetAnyReg
+	dd	offset GetNotFreeReg
+	dd	offset GetReg
+	dd	offset CheckReg
+	dd	offset GetRegNum
+
+	dd	offset G_XchgEax
+	dd	offset G_PushPop
+	dd	offset G_Nop
+	dd	offset G_MovRegImm
+	dd	offset G_MovRegReg
+	dd	offset G_GenJxx
+
+        dd      0
