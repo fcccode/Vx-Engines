@@ -1,0 +1,75 @@
+			VPE (v. permutation engine)
+Это мой первый вроде законченный движок для пермутации(если есть предложения по ултшению или какие либо другие замичания прошу отсылать на мой адресс Wan1788@rambler.ru либо писать в форуме Wasm-а раздел вирусология).В нем используется дисассемблер ADE 2.02 (Z0mbie).Состоит из трех функций (вообщето из четырех, но это уж из-за особеностей АДЕ):
+1) VPE_krn - основная разбирающая и анолизирующая код функция, входные пораметры:
+push	size free memory - размер свободной памяти	
+push	size code - размер кода
+push	address code - начало припарируемого кода
+push	free mem - память под список
+call	VPE_krn - ну собствено вызов ф-ии.
+add	esp, 4*4 - чистим стек
+if 	(eax == 0) 		--> all ok - все нормально
+
+elseif	(eax == 1) 		--> flaw of memory - недостаток памяти
+				   	
+elseif 	(eax == -1) 		--> Unknow Error		-
+				--> Error disassembler	- фатальная ошибка
+				--> Calculate label error	-
+Один элемент списка выглядит так:
+
+disasm_struct           	struct                  ; disasm()  asm()
+disasm_defaddr         	db      ?               ;  in/out  unused
+disasm_defdata         	db      ?               ;  in/out  unused
+disasm_len              	dd      ?               ;2    out     out  ==ret.value
+disasm_flag             	dd      ?               ;6    out     in
+disasm_addrsize         	dd      ?               ;a    out     in
+disasm_datasize         	dd      ?               ;e    out     in
+disasm_rep              	db      ?               ;12    out     in
+disasm_seg              	db      ?               ;13    out     in
+disasm_opcode           	db      ?               ;14    out     in
+disasm_opcode2          	db      ?               ;15    out     in
+disasm_modrm            	db      ?               ;16    out     in
+disasm_sib              	db      ?               ;17    out     in
+disasm_addr             	db      8 dup (?)       ;1f    out     in
+disasm_data             	db      8 dup (?)       ;27    out     in
+ends
+
+;<----Start my staff---->
+ComandInfo 		struct
+	InfCmd		disasm_struct ?
+	_Flag		db	?
+				   ; 0 - normal comand
+				   ; 1 - jmp
+				   ; 2 - call
+				   ; 3 - jcc
+				   ; 4 - bad 
+	_AddrComand	dd	?
+	_AddrTrans	dd	? ; reserved 
+	_NextrStr		dd	? ; next stucure
+	_PreStr		dd	? ; previos stucture
+	_NStr		dd	? ; "virtual" address
+	_Label		dd	?; 0 - nothing
+				 ; 1 - Label
+				 ; > 1 - indicates structure of purpose
+	_NoMove		db	?
+ends
+Вроди все понятно.Так же есть одна глобальная структура:
+_BaseStr			struct
+	_FreeMem	dd	? ; address free memory
+	_HeadListStr	dd	? ; start list disassemble structure
+	_CmdNum	dd	? ; amount of commands
+	ListEnd		dd	? ; end list disassemble structure
+	_TblOpcode	dd	? ; table of opcode
+;-----
+;any information
+;-----
+ends
+2) CalcVAddr - настраивает койкакие пораметры. на вход ebx - начало уже измененного исписка, на выход eax -  размер памяти нужной для готового кода.
+3) VPE_asm - сборщик.Входные пораметры:
+push свободная память
+push начало списка
+Call VPE_asm
+add esp, 4*2
+На выходе в ecx - размер готового кода.
+За орфаграфию не ругать.Надеюсь движок вам понравится и еще больше надеюсь на то, что вы выскажите всю самую едкую критику (но только не про меня, а про движок).Да, опять забыл мутатор сами пишите, так движек будет более унивирсальным.
+
+Wan1788. 29 june 2005

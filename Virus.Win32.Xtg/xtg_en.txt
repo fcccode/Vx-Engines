@@ -1,0 +1,540 @@
+[english]
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											xTG
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+USER'S MANUAL
+
+Here we consider engines: RANG32, FAKA, XTG (rang32.asm, faka.asm, xtg.inc, xtg.asm, logic.asm). You 
+can combine them into one big engine, and used separately.  
+Examples work of engines look in test.asm (+ test.bat). 
+Remarks, suggestions, requests are welcome=)
+Also, I'd be grateful, if You, finding inaccuracies in work of the engines, let Me know.
+And sorry for my bad english =) 
+																		
+																m1x
+																pr0mix@mail.ru
+																EOF
+																		
+																virmaking for yourself...art is eternal
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											xTG
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+	
+
+
+
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											RANG32
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+=========================================================================================================
+I. 
+RANG32
+RAndom Numbers Generator
+rang32.asm
+=========================================================================================================
+PROTOTYPE:
+(stdcall) DWORD RANG32(DWORD n);	
+n - number. The function RANG32 returns a random number (RN) in range [0..n - 1].
+=========================================================================================================
+FEATURES: 
+[+] generates RN (in the set range); 
+[+] position-independent code;
+[+] easy to use;
+[+] without delta-offset and data - just clean code, excellent suited for mutation; 
+[+] does not use WinAPIs;
+[+] can be used with any other engines (the engine can be compiled as stand-alone module); 
+=========================================================================================================
+USING:
+
+1. Including:
+	rang32.obj/rang32.asm
+	
+2. Call (for example, stdcall):
+	push	05					;number 5; 
+	call	RANG32				;in EAX after calling will be RN [0..5-1]; 
+=========================================================================================================	
+VERSION:
+
+v1.0.2 
+=========================================================================================================
+HISTORY:
+
+[v1.0.2]	:
+				and previous ones. Minor changes in the engine. 
+			
+[v1.0.0]	:
+				Release - the first version! 
+=========================================================================================================                                                                                                       
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											RANG32
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								
+								
+								
+								
+											
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											xTG
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+=========================================================================================================
+II. 
+xTG
+eXperimental/eXtended/eXecutable Trash Generator
+xtg.inc, xtg.asm, logic.asm	
+=========================================================================================================
+PROTOTYPE:
+stdcall: DWORD xTG(DWORD xparam);
+xparam - address of the filled structure XTG_TRASH_GEN. After performing this function:
+	1. trash-code will be generated;
+	2. output fields of the structure XTG_TRASH_GEN will be filled; 
+	3. in EAX - address for further entries of trash-code; 
+=========================================================================================================
+NOTES:
+[+] input fields of structure XTG_TRASH_GEN (and all other structures) after working off the engine 
+	don't change their values; 
+[+] if the structures (XTG_TRASH_GEN etc) will change (add new fields, etc), then make the size of 
+	these structures are a multiple of 4 (x86); 
+[+] see source code (ssc) =)
+[+] this engine consists of files: xtg.inc, xtg.asm, logic.asm. xtg.inc - header file. xtg.asm - 
+	engine the xTG. logic.asm - logic of trash; 
+[+] xTG designed to generate trash instructions and data (strings, numbers, etc). Can be used as a 
+	stand-alone engine and together with any other engine: polymorph, permutant etc. Can use to viruses/
+	worms/trojans/etc, cryptors, protectors, packers and other progs; 
+=========================================================================================================
+DETAILED DESCRIPTION OF THE FIELDS OF STRUCTURES:
+[0] - input param;
+[1] - output param;
+	 
+
+---------------------------------------------------------------------------------------------------------	  
+XTG_TRASH_GEN
+Main structure. 
+
+[fmode]					: [0]
+						  Trash-Code generation mode. The engine has 2 modes of generation of garbage:
+						  XTG_MASK è XTG_REALISTIC. 
+						  1-st mode, XTG_MASK aka "mask" - you can select and generate specific 
+						  instructions (using a mask). It may be useful for slow-polymorphism. 
+						  2-nd mode, XTG_REALISTIC aka "realistic". This mode generates the "right" code 
+						  that tries to be as similar to a conventional code of standard programs 
+						  (written in HLL). To do this, instructions are built now correctly: opcodes 
+						  (adaptive to the ms-compilers), constructions, uses opcode frequency 
+						  statistics, building of a logic code, and more.
+						  Use your favorite mode!
+						  if you specify a mode XTG_MASK and selected, for example, 2-3 instructions in 
+						  the mask, the engine may be slow to create trash - wait and all will be. It is 
+						  a norm; 
+						  
+[rang_addr]				: [0]
+						  RNG address. You can pass the RANG32 address or any other RNG. Then the 
+						  function prototype RNG should be:
+						  (stdcall) DWORD xRandNumGen (DWORD n);
+						  This function should return (in EAX) random number (RN) in the range 
+						  [0..n - 1]. Registers (except EAX) after the call should remain unchanged.
+						  
+[faka_addr]				: [0]
+						  address of the Fake Api Generator (FAG). You can pass the FAKA address or any 
+						  other FAG. Then the function prototype FAG should be:
+						  (stdcall) DWORD xGenFakeApi(DWORD xaddr); 
+						  xaddr - the address on the structure identical to these FAKA_FAKEAPI_GEN.
+						  This function should return an address for further write code. 
+						  If the generation of winapi-func you don't need, then here you can put 0;
+						  
+[faka_struct_addr]		: [0]
+						  address of the structure FAKA_FAKEAPI_GEN. This structure needed for work 
+						  of the engine FAKA in xTG.
+						  Also, if the generation of winapi-func you don't need, then here you can 
+						  put 0; 
+						  
+[xfunc_struct_addr]		: [0]
+						  address of the structure XTG_FUNC_STRUCT. 
+						  If the function (with prologues, etc.) are created by this engine (xTG, 
+						  mode "realistic", flag XTG_FUNC etc), then you can write in this field a 0. 
+						  If the functions are  don't created, then this is safely possible put 0.  
+						  In other situations, then fill XTG_FUNC_STRUCT-structure and pass its address 
+						  in this field;
+						  
+[xdata_struct_addr]		: [0]
+						  address of the structure XTG_DATA_STRUCT. 
+						  If you need a creation of instructions such as 
+						  mov ecx, dword ptr [403008h] etc, and/or generation of thrash-data (strings, 
+						  numbers), then fill this structure and its address is passed in this field. 
+						  If such instructions are not needed, then this field = 0;
+						  
+[alloc_addr]			: [0] 
+						  address the function of memory allocation. It is desirable to pass the 
+						  address, then the engine will use its capabilities to 100%.
+						  Prototype memory allocation function:
+						  (stdcall) DWORD xFuncAlloc(DWORD xsize);
+						  This function must allocate memory for the read-write-execute, and return (in 
+						  EAX) address of the allocated memory, the size of xsize bytes. After the 
+						  call, registers (except EAX) should remain unchanged. 
+						  As an alternative, in this field, you can pass 0;
+						  
+[free_addr]				: [0]
+						  address of a function to free memory. It is desirable to pass the 
+						  address, then the engine will use its capabilities to 100%; etc; 
+						  Prototype function to free memory:
+						  (stdcall) DWORD/void xFuncFree(xaddr);
+						  This function must to free memory on address xaddr. After the call, registers 
+						  should remain unchanged.
+						  
+[tw_trash_addr]			: [0]
+						  the address where to write the generated trash;
+						  
+[trash_size]			: [0]
+						  size of trash-code; 
+						  
+[xmask1] & [xmask2]		: [0]
+						  64-bit mask for the generation of trash (for XTG_MASK/XTG_REALISTIC mode). 
+						  See in xtg.inc for details.
+						  Btw, flag XTG_FUNC can be used, if 
+						  [fmode] = "realistic", 
+						  [alloc_addr] = FuncMemAlloc;
+						  [free_addr] = FuncMemFree;
+						  and all other fields are correctly filled out=);
+						  Btw, flag XTG_LOGIC can be used analogically; 
+						  
+[fregs]					: [0]
+						  busy registers. See in xtg.inc for details; etc; 
+						  For correctly work of the engine should be left free for at least 3 32-bit 
+						  registers. But we can left free and less 3 - if are generated by specific 
+						  instructions - everything on situation.
+						  If busy registers - this XTG_EAX + XTG_ECX + XTG_EDX. And also, have flag 
+						  to create a winapi-func. Then this registers are all the same may change its 
+						  values. So be careful!
+						  Also, ebp & esp registers are always busy and do not change their values 
+						  after working off of trash-code. 
+						  
+[nobw]					: [1]
+						  number of bytes written. 
+						  If [fmode] = XTG_REALISTIC, then [nobw] = [trash_size];
+						  
+[ep_trash_addr]			: [1]
+						  entry point in the created trash. 
+						  If [fmode] = XTG_MASK, then [ep_trash_addr] = [tw_trash_addr]. 
+						  If [fmode] = XTG_REALISTIC without flag XTG_FUNC (xmask), then 
+						  [ep_trash_addr] = [tw_trash_addr]. 
+						  If [fmode] = XTG_REALISTIC and in xmask set flag XTG_FUNC, then 
+						  [ep_trash_addr] = address of the function at which to begin work trash-code;
+						  
+[fnw_addr]				: [1]
+						  address for further writing code; 
+---------------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------
+XTG_FUNC_STRUCT
+The structure required to create functions (with a prologue, epilogue etc). Also read about
+XTG_GEN_TRASH.xfunc_struct_addr.
+
+[func_addr]				: [0]
+						  address of function. At this address will be generated (or already built) func 
+						  (with a prologue etc); 
+						  
+[func_size]				: [0]
+						  size of this function; 
+						  
+[call_num]				: [0]
+						  number of calls (0xE8) in this function; 
+						  
+[local_num]				: [0]
+						  number of local variables in function. For example, there is instruction 
+						  sub esp, 0Ch - then the number of local variables = 0Ch (12) / 4 = 3 
+						  ([local_num] = 3); 
+						  
+[param_num]				: [0]
+						  number of input parameters in the function. 
+						  For example, there is construction: 
+							push	ecx							;input param
+							push	dword ptr [ebp - 04]		;input param
+							call	func_x
+						  Then for function func_x field [param_num] = 2; 
+---------------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------
+XTG_DATA_STRUCT
+The structure required to create instructions that use memory addresses, as well as to generate 
+trash-data: strings, numbers, etc. Also read about XTG_TRASH_GEN.xdata_struct_addr.
+
+[xmask]					: [0]
+						  mask to generate trash-data. 
+						  If you need to create only instructions that use memory addresses, then write 
+						  0 here. Also, see in xtg.inc; 
+						  
+[rdata_addr]			: [0]
+						  address, where will be written trash-data; 
+						  in this field can be passed as VirtualAddress (VA), and the absolute 
+						  physical address in the file (for writing to a file);
+						  If [rdata_addr] = 0, then trash-data is not generated.
+						  This address is transmitted only for the generation of thrash-data!
+						  For trash-code, these addresses can be read-only.
+						  Areas addresses 
+						  [rdata_addr] + [rdata_size] 
+						  [xdata_addr] + [xdata_size]
+						  don't must overlap! 
+						  it is desirable to address ([rdata_addr]) a multiple of 4;
+						  
+[rdata_size]			: [0]
+						  size of this area, and the value must be >= 4 (bytes); 
+						  
+[rdata_pva]				: [0]
+						  what the address is passed in [rdata_addr]: VA or physical? Availables values 
+						  for this field can be found in xtg.inc; 
+						  
+[xdata_addr]			: [0]
+						  address of memory - the address of this area will be used the generated 
+						  instructions such as 
+						  add ecx, dword ptr [403008h] 
+						  sub dword ptr [40300Ch], edx 
+						  and others;
+						  in this field is passed to VA; 
+						  it is desirable to address ([xdata_addr]) a multiple of 4; 
+						  
+[xdata_size]			: [0]
+						  size of this area, and the value must be >= 4 (bytes); 
+						  
+[nobw]					: [1]
+						  number of bytes written of trash-data. 
+						  If trash-data are not generated, then this field is ignored; 
+---------------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------
+FAKA_FAKEAPI_GEN
+The structure for FAKA (and for XTG_TRASH_GEN.faka_struct_addr). 
+
+[mapped_addr]			: [0]
+						  result of function MapViewOfFile; 
+						  
+[rang_addr]				: [0]
+						  RNG address. Also, see a field XTG_TRASH_GEN.rang_addr; 
+						  
+[alloc_addr]			: [0]
+						  also, see a field XTG_TRASH_GEN.alloc_addr;
+						  
+[free_addr]				: [0]
+						  also, see a field XTG_TRASH_GEN.free_addr; 
+						  
+[xfunc_struct_addr]		: [0]
+						  also, see a field XTG_TRASH_GEN.xfunc_struct_addr (in FAKA - for 
+						  push dword ptr [ebp - 14] etc (param for winapi)); 
+						  
+[xdata_struct_addr]		: [0]
+						  also, see a field XTG_TRASH_GEN.xdata_struct_addr (in FAKA - for 
+						  push dword ptr [403008h] etc (param for winapi)); 
+						  
+[tw_api_addr]			: [0]
+						  the address where to write the generated fake call winapi.
+						  If the engine FAKA is used inside the engine xTG, then you can write in this 
+						  field 0.
+						  If the winapi-func is not found, then nothing in that buffer will not be 
+						  writed; 
+						  
+[api_size]				: [0]
+						  max size of winapi-construction. Winapi-construction, for example, this:
+							push	0
+							push	403000h
+							push	403000h
+							push	0
+							call	MessageBoxA
+						  If the engine FAKA is used inside the engine xTG, then you can write in this 
+						  field 0 (also, see xtg.inc (value WINAPI_MAX_SIZE)); 
+						  
+[api_hash]				: [0] [1]
+						  Search winapi (more precisely VA) occurs on hash of name of the necessary 
+						  winapi. If this field != 0, then it (FAKA) will search only this winapi-func, 
+						  the hash on whose behalf specified. And if winapi is found in the file that 
+						  mapped in memory, then in the [api_va] return VirtualAddress (VA in IAT), in 
+						  which will be address of interest us winapi. If the specified hash was in 
+						  hashes-table (see in FAKA), then will be generated and written to the buffer 
+						  ([tw_api_addr]) fake call of found winapi-function. If the hash was not in 
+						  the hash-table, then the generation will not be. It can be done manually 
+						  (using the address in [api_va]).
+						  If this field = 0, then will search any hash from hash-table (about fake call 
+						  alreafy written). 
+						  If winapi is found, regardless, will generate call or not, this 
+						  field = hash on behalf of the found winapi-func. If winapi is not found, 
+						  then there will be 0; 
+						  
+[api_va]				: [1]
+						  If winapi is found, then this field = VA, in which will be address of interest 
+						  us winapi. If winapi is not found, then there will be 0; 
+						  
+[nobw]					: [1]
+						  number of bytes (actually) written; 
+						  
+[fnw_addr]				: [1]
+						  address for further write code; 
+---------------------------------------------------------------------------------------------------------
+
+=========================================================================================================
+FEATURES:
+[+] generates x86 instructions/constructions (many variants);
+[+] generates data (strings, numbers);
+[+] generates instructions on mask;
+[+] generates "right" code:
+		x "right" "correct";
+		x realistic;
+		x anti-heuristic;
+		x anti-entropy;
+		x opcode frequency statistics;
+		x logic of trash-code (new!); 
+[+] generates functions (with a prologue, epilogue etc); 
+[+] generates winapi-func;
+[+] position-independent code;
+[+] can be used with any other engines (the engine can be compiled as stand-alone module); 
+[+] without delta-offset and data - just clean code, excellent suited for mutation; 
+[+] does not use WinAPIs (callback's);
+[x] some pieces of code are duplicated in the engines, so that someone does not like - do differently; 
+=========================================================================================================
+USING:
+
+1. Including:
+	xtg.obj / xtg.inc, xtg.asm, logic.asm
+	
+2. Call (for example, stdcall):
+	;example call/use the engine is in the file test.asm (+ test.bat etc);
+=========================================================================================================	
+VERSION:
+
+v2.0.0
+=========================================================================================================
+HISTORY:
+
+[v2.0.0]	:
+				on based v1.0.0  engine completely rewritten, taking into account the many features. 
+				The engine gets a "new breath"; 
+			
+[v1.0.0]	:
+				Release - the first version! 
+=========================================================================================================
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											xTG
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+			
+			
+			
+			
+								 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											FAKA
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+=========================================================================================================
+I. 
+FAKA
+FAKe Api generator
+xtg.inc, faka.asm
+=========================================================================================================
+PROTOTYPE:
+stdcall: DWORD FAKA(DWORD xparam);
+xparam - address of the filled structure FAKA_FAKEAPI_GEN. After performing this function:
+	1. generates fake winapi-function; 
+	2. output fields of the structure FAKA_FAKEAPI_GEN will be filled; 
+	3. in EAX - address for further entries of trash-code; 
+=========================================================================================================
+NOTES:
+[+] see notes for xTG;
+[+] see detailed description of fields of the structures xTG; 
+[+] etc
+=========================================================================================================
+FEATURES:
+[+] generates various winapi with improved input parameters;
+[+] found (and perhaps generates) of a specific winapi;
+[+] position-independent code;
+[+] without delta-offset and data - just clean code, excellent suited for mutation; 
+[+] does not use WinAPIs (callback's);
+[+] can be used with any other engines (the engine can be compiled as stand-alone module); 
+=========================================================================================================
+USING:
+
+1. Including:
+	faka.obj / xtg.inc, faka.asm
+	
+2. Call (for example, stdcall):
+	;example call/use the engine is in the file test.asm (+ test.bat etc), and also in xtg.asm 
+	(label xwinapi_func); 
+=========================================================================================================	
+VERSION:
+
+v2.0.0
+=========================================================================================================
+HISTORY:
+
+[v2.0.0]	:
+				on based v1.0.0  engine completely rewritten, taking into account the many features. 
+				The engine gets a "new breath"; 
+			
+[v1.0.0]	:
+				Release - the first version! 
+=========================================================================================================                                                                                                       
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+											FAKA
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
+
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+
+								xxxxx		xxxxx		xxxxx
+								xxxxx		xxxxx		xxxxx
+	
+

