@@ -1,0 +1,1 @@
+@cl /nologo /MD /D "LOGGING" /O2 tester.c -I. && del *.obj

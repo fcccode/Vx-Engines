@@ -1,0 +1,78 @@
+YAD (Yet Another Disassembler) (x) herm1t@vx.netlux.org, 2008
+
+About
+-----
+
+  YAD is the IA-32 instruction parser. 32-bits mode only. It splits the
+instrcutions into pieces and stores it to the structure of type yad_t
+defined in "yad.h". The engine can also assemble the insn. back. The
+functions has the following prototypes:
+
+	int yad(uint8_t *opcode, yad_t *diza);
+	int yad_asm(uint8_t *opcode, yad_t *diza);
+	
+  Both functions return the length of (dis)assembled instruction or in
+the case of yad() - zero, if error occured. The flags field of the
+structure may also had the C_BAD flag set, indicating that while insn.
+is still valid its highly suspicious and should not appear in the normal
+program. Currently, this flag is set for "00 00" and "FF FF" opcodes and
+instructions with redundant prefixes.
+
+  The engine might be also called "Less eXtended Disassembler Engine",
+because it's primarily based on XDE v. 1.02 by Z0mbie, the stuff related
+to operands parsing was omitted, but the table was regenerated to reflect
+the changes in IA-32 since the last release of XDE. There were also
+minor clean-ups in the code.
+
+  The constants and the data structure is partially compatible, if you
+gonna use this instead of XDE, you'll have to slightly change your code.
+
+  The size of the engine is about 2Kb depending on compilation options.
+
+Design
+------
+ 
+ * The table (yad_data array) has the following structure:
+  
+  0			| Offset x | 		(byte) *1
+			| Offset x | 		(byte)
+			.......................
+  +YAD_VALUES_OFFSET	| Flags 0             |	(word)
+ 			| Flags 1             |
+			.......................
+  +YAD_FLOAT_OFFSET	| 576 bits for FPU    | array of bits *2
+ 			.......................
+  +YAD_3DNOW_OFFSET	| 256 bits for 3DNow  | array of bits *3
+ 
+	*1) to fetch the flags for the given insn., fetch the index:
+ 		index = yad_data[opcode] // for the main table
+	and the flags:
+ 		flags = *(uint16_t*)(yad_data + YAD_VALUES_OFFSET + index * 2)
+	*2) 64 bits for FPU mem. ops. (mod !=3) indexed by opcode and reg.
+	field of modrm and 512 bits for FPU reg. ops. (8 x 8 x 8) indexed by
+	opcode, and reg, rm fields of modrm. If bit is set - the instruction
+	is not valid.
+	*3) If the bit indexed by suffix (diza->data1) is set - instruction
+	is not valid.
+
+ If you wish, it could be easily compressed. With PACK6 option indexes (1)
+will be packed (6 bits per index).
+
+  The code was designed specially for the Linux.Lacrimae virus. And this
+has the following implications:
+
+ * The table is defined as global variable, because the virus is able to
+ fix the memory references. You can easily change this by passing the table
+ as the argument for yad() function.
+ 
+ * Size and quality of the code produced by compiler doesn't matter. Really.
+ The virus (and most of its victims) all written in C. Why should I optimize
+ the code, while the virus will try to analyze and obfuscate it? I would not
+ like to add special cases in the virus directed against my own
+ optimizations. :-)
+
+Download
+--------
+
+ The latest version of the YAD is available at my homepage:
+http://vx.org.oua/herm1t/
