@@ -1,0 +1,29 @@
+# Project: kpasm
+# Makefile created by Dev-C++ 4.9.9.0
+
+CPP  = g++.exe -g -D__DEBUG__
+CC   = gcc.exe -g -D__DEBUG__
+WINDRES = windres.exe
+RES  =
+OBJ  = kpasm.tab.o lex.yy.o linkedlist.o utils.o kasm.o verif.o $(RES)
+LINKOBJ  = kpasm.tab.o lex.yy.o linkedlist.o utils.o kasm.o verif.o $(RES)
+LIBS =  -L"C:/Program Files/Dev-Cpp/lib"  -g3
+INCS =  -I"C:/Program Files/Dev-Cpp/include"
+CXXINCS =  -I"C:/Program Files/Dev-Cpp/include/c++/3.3.1"  -I"C:/Program Files/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"C:/Program Files/Dev-Cpp/include/c++/3.3.1/backward"  -I"C:/Program Files/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"C:/Program Files/Dev-Cpp/include"
+BIN  = kpasm.exe
+CXXFLAGS = $(CXXINCS)   -g3
+CFLAGS = $(INCS)   -g3
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before kpasm.exe all-after
+
+
+clean: clean-custom
+	rm -f $(BIN)
+
+$(BIN): kpasm.tab.c linkedlist.c utils.c poly_fonctions.h kasm.c verif.c poly_fonctions.asm
+	type poly_fonctions.asm | ascii2c.exe > poly_fonctions.h
+	$(CC) -o kpasm.exe kpasm.tab.c linkedlist.c kasm.c utils.c verif.c $(LIBS)
+
+

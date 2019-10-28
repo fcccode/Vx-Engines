@@ -1,0 +1,11 @@
+
+t1(tt:registre,trucmuche:entier)
+{
+  lock(freemem0,truc);
+  write32([freemem1]>>6^rndint0);
+}
+
+t2(m:adresse)
+{
+ 
+}
